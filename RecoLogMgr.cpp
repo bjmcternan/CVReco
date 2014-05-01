@@ -61,6 +61,7 @@ void CRecoLogMgr::WriteLog(string sizeString)
 	std::string outString = TimeStamp();
 	outString += " " + sizeString;
 	_logFile << outString << endl;
+	_logFile.flush();
 }
 
 std::string CRecoLogMgr::TimeStamp()

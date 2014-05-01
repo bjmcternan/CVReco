@@ -47,7 +47,17 @@ bool CRecoManager::Init(string strBasePath, string strLogName)
 
 bool CRecoManager::BuildModel(unsigned int numFeatures)
 {
-	vector<CRecoImage> images; 
+	//Convert to arg input
+	int dictionarySize = 124;
+	int maxTimes = 10;
+	TermCriteria tc(CV_TERMCRIT_ITER, maxTimes, 0.001);
+	int retries = 1;
+	int flags = KMEANS_PP_CENTERS;
+
+	BOWKMeansTrainer bowTrainer(dictionarySize,tc, retries, flags);
+	Mat vocabulary;
+	//vector<CRecoImage> images; 
+	
 	for(int i = 0; i < NUM_RECO_CLASSIFICATIONS; i++)
 	{
 		unsigned int count = 0;
@@ -55,15 +65,18 @@ bool CRecoManager::BuildModel(unsigned int numFeatures)
 		{
 			CRecoImage tempImage;
 			tempImage.FindFeatures(_RecoFileMgr[RECO_TRAIN][i].GetImagePath(j), numFeatures);
-			images.push_back(tempImage);
-			cout << count << endl;
+			//images.push_back(tempImage);
+			bowTrainer.add(tempImage.GetDescriptors());
 			count++;
 		}
 		ostringstream message;
-		message << "RecoManager -> Descriptors for " << RECO_CLASSIFICATION_NAME[RECO_TRAIN] << " written. Number: " << count;
+		message << "RecoManager -> Descriptors for " << RECO_CLASSIFICATION_NAME[i] << " written. Number: " << count;
 		CRecoLogMgr::Instance()->WriteLog(message.str());
+		cout << count << endl;
 	}
 	
+	vocabulary = bowTrainer.cluster();
+
 	return true;
 }
 bool CRecoManager::AssessModel()

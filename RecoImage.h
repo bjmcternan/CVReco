@@ -18,8 +18,9 @@ public:
 	void FindFeatures(string strImagePath, unsigned int numFeatures);
 	void SetClassification(tRecoClassification classification);
 	tRecoClassification GetClassification();
+	Mat& GetDescriptors(){return _Descriptors;};
 protected:
-	vector <KeyPoint> _keyPoints;
+	Mat _Descriptors;
 	tRecoClassification _Classification;
 	
 	bool LoadImg(string strImagePath, Mat& rImage);

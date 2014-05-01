@@ -28,13 +28,14 @@ bool CRecoImage::LoadImg(string strImagePath, Mat& rImage)
 
 void CRecoImage::FindFeatures(string strImagePath, unsigned int numFeatures)
 {
+	vector <KeyPoint> keyPoints;
 	Mat image; 
-
 	if(!this->LoadImg(strImagePath, image))
 		CRecoLogMgr::Instance()->WriteLog("CRecoImage -> FindFeatures !FAILURE! Could not open or find the image. Path is: " + strImagePath); 
 
-	SiftFeatureDetector SIFTdetector(numFeatures);
-	SIFTdetector.detect(image, _keyPoints);
+	SIFT SIFTdetector(numFeatures);
+	SIFTdetector.detect(image, keyPoints);
+	SIFTdetector.compute(image,keyPoints, this->_Descriptors);
 }
 
 void CRecoImage::SetClassification(tRecoClassification classification)
