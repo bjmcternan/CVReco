@@ -69,7 +69,12 @@ std::string CRecoLogMgr::TimeStamp()
 	//TimeStamp - returns a current localized timestamp string
 	//Input: none
 	//Output: String containing the current localized time
-	time_t now = time(NULL);
-	string out = asctime(localtime(&now));
-	return out.substr(0,out.size()-1);
+	struct tm now;
+	time_t time;
+	_time64(&time);
+	char out[100];
+	localtime_s(&now,&time);
+	asctime_s(out,100,&now);
+	out[strnlen_s(out,100)-1] = '\0'; //Trim off newline
+	return string(out);
 }

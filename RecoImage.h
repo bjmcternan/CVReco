@@ -12,17 +12,24 @@ using namespace cv;
 class CRecoImage
 {
 public:
-	CRecoImage(void);
+	CRecoImage();
 	~CRecoImage(void);
+
+	void FindFeatures(SIFT& SIFTDetector);
+	void FindDescriptors(SIFT& SIFTDetector);
+	void Train(string strImagePath, tRecoClassification classification, Mat& response_hist, BOWImgDescriptorExtractor bowide, map<string,Mat>& classes_training_data);
 	
-	void FindFeatures(string strImagePath, unsigned int numFeatures);
-	void SetClassification(tRecoClassification classification);
 	tRecoClassification GetClassification();
-	Mat& GetDescriptors(){return _Descriptors;};
+	Mat& GetDescriptors(){return this->_Descriptors;};
+	void SetFullImagePath(string path);
+	string& GetFullImagePath(){return _FullImagePath;};
+	void SetClassification(tRecoClassification i);
+	bool LoadImg(Mat& rImage);
+	vector<KeyPoint>& GetKeyPoints(){return _KeyPoints;};
 protected:
 	Mat _Descriptors;
+	vector<KeyPoint> _KeyPoints;
 	tRecoClassification _Classification;
-	
-	bool LoadImg(string strImagePath, Mat& rImage);
+	string _FullImagePath;
 };
 

@@ -17,4 +17,3 @@ static char* RECO_CLASSIFICATION_NAME [] =
 	"none",
 	"person"
 };
-
