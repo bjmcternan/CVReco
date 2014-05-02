@@ -15,8 +15,8 @@ class CRecoManager
 public:
 	CRecoManager(void);
 	~CRecoManager(void);
-	bool Init(string strBasePath, string strLogName, string numFeatures);
-	bool BuildModel(unsigned int);
+	bool Init(string strBasePath, string strLogName, string numFeatures, string dictionarySize);
+	bool BuildModel(unsigned int numFeatures, unsigned int dictionarySize);
 	bool TestModel(unsigned int numFeatures);
 	void PopulateImages();
 	int GetNumImages(){return (int)(_Images.size());};

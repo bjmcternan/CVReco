@@ -30,14 +30,14 @@ CRecoManager::~CRecoManager(void)
 	}
 }
 
-bool CRecoManager::Init(string strBasePath, string strLogName, string numFeatures)
+bool CRecoManager::Init(string strBasePath, string strLogName, string numFeatures, string dictionarySize)
 {
 	if(!CRecoLogMgr::Instance()->Init(strBasePath, strLogName))
 		return false;
 	CRecoLogMgr::Instance()->WriteLog("RecoManager -> Log Created\n");
 
 	ostringstream message;
-	message << "RecoManager -> Params used: number of features - " << numFeatures;
+	message << "RecoManager -> Params used: number of features - " << numFeatures << " Dictionary Size - " << dictionarySize;
 	CRecoLogMgr::Instance()->WriteLog(message.str());
 
 	ostringstream strFullPath;
@@ -102,13 +102,12 @@ CRecoImage* CRecoManager::GetImage(unsigned int i)
 	return &(_Images[i]);
 }
 
-bool CRecoManager::BuildModel(unsigned int numFeatures)
+bool CRecoManager::BuildModel(unsigned int numFeatures, unsigned int dictionarySize)
 {
 	//Log
 	CRecoLogMgr::Instance()->WriteLog("RecoManager -> Building Model : Start ");
 
 	//Convert to arg input
-	int dictionarySize = 124;
 	int maxTimes = 10;
 	TermCriteria tc(CV_TERMCRIT_ITER, maxTimes, 0.001);
 	int retries = 1;
