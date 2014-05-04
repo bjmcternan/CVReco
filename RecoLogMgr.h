@@ -18,6 +18,7 @@ public:
 
 	static CRecoLogMgr* Instance();
 	bool Init(string strBasePath, string strLogName);
+	bool InitFinal(string strBasePath);
 	void WriteLog(string);
 private:
 	CRecoLogMgr(){};  //Private so it can't be called

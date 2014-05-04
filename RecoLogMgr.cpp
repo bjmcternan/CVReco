@@ -29,10 +29,12 @@ bool CRecoLogMgr::Init(string strBasePath, string strLogName)
 	ostringstream ostrFilePath;
 	time_t now = time(NULL);
 
-	ostrFilePath << strBasePath << "\\" << LOGFOLDERNAME << "\\" << strLogName << "_" << now << ".txt";
+	//commented to make a final log
+	//ostrFilePath << strBasePath << "\\" << LOGFOLDERNAME << "\\" << strLogName << "_" << now << ".txt";
+	ostrFilePath << strBasePath << "\\" << LOGFOLDERNAME << "\\FinalLog.txt";
 	try
 	{
-		_logFile.open(ostrFilePath.str());
+		_logFile.open(ostrFilePath.str(), fstream::out | fstream::app);
 	}
 	catch ( const exception & ex )
 	{
