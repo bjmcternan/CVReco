@@ -31,9 +31,13 @@ bool CRecoFileMgr::Init(string strBasePath)
 	//Build path for FindFirstFile
 	//Check for trailing "\"
 	if (strBasePath[strBasePath.length()-1] == '\\')
+	{
 		strDirPath << strBasePath;
+	}
 	else
+	{
 		strDirPath << "\\" << strBasePath;
+	}
 	
 	strPathBuffer << strDirPath.str() << "*";
 	////
@@ -47,14 +51,18 @@ bool CRecoFileMgr::Init(string strBasePath)
 	else
 	{
 		if (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+		{
 			_ImgPaths.push_back(string(strDirPath.str() + ffd.cFileName));		//Add to List
+		}
 	}
 
 	//Iterate through all files in path
 	while(FindNextFile(_hFind, &ffd) != 0)
 	{
 		if (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+		{
 			_ImgPaths.push_back(string(strDirPath.str() + ffd.cFileName));		//Add to List
+		}
 	}
 	return true;
 }
@@ -67,6 +75,8 @@ unsigned int CRecoFileMgr::GetNumImages()
 string CRecoFileMgr::GetImagePath(unsigned int i)
 {
 	if(i >= this->GetNumImages())
+	{
 		return "INVALID";
+	}
 	return _ImgPaths[i];
 }

@@ -35,8 +35,9 @@ void CRecoImage::FindFeatures(SIFT& SIFTDetector)
 {
 	Mat image; 
 	if(!this->LoadImg(image))
+	{
 		CRecoLogMgr::Instance()->WriteLog("CRecoImage -> FindFeatures !FAILURE! Could not open or find the image. Path is: " + this->GetFullImagePath()); 
-
+	}
 	
 	SIFTDetector.detect(image, this->_KeyPoints);
 }
@@ -45,8 +46,9 @@ void CRecoImage::FindDescriptors(SIFT& SIFTDetector)
 {
 	Mat image; 
 	if(!this->LoadImg(image))
+	{
 		CRecoLogMgr::Instance()->WriteLog("CRecoImage -> FindFeatures !FAILURE! Could not open or find the image. Path is: " + this->GetFullImagePath()); 
-
+	}
 	
 	SIFTDetector.detect(image, this->_KeyPoints);
 	SIFTDetector.compute(image, this->_KeyPoints, this->_Descriptors);

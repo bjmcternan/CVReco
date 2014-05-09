@@ -15,10 +15,10 @@ class CRecoManager
 public:
 	CRecoManager(void);
 	~CRecoManager(void);
-	bool Init(string strBasePath, string strLogName, string numFeatures, string dictionarySize);
+	bool Init(string strBasePath, string strLogName, string numFeatures, string dictionarySize, string validationOrTest);
 	bool BuildModel(unsigned int numFeatures, unsigned int dictionarySize);
 	bool TestModel(unsigned int numFeatures);
-	void PopulateImages();
+	void PopulateImages(unsigned int validationOrTest);
 	int GetNumImages(){return (int)(_Images.size());};
 	CRecoImage* GetImage(unsigned int i);
 protected:

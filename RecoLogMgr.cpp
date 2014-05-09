@@ -15,7 +15,9 @@ CRecoLogMgr* CRecoLogMgr::_pInstance = NULL;
 CRecoLogMgr* CRecoLogMgr::Instance()
 {
 	if(!_pInstance)
+	{
 		_pInstance = new CRecoLogMgr;
+	}
 
 	return _pInstance;
 }
@@ -31,7 +33,7 @@ bool CRecoLogMgr::Init(string strBasePath, string strLogName)
 
 	//commented to make a final log
 	//ostrFilePath << strBasePath << "\\" << LOGFOLDERNAME << "\\" << strLogName << "_" << now << ".txt";
-	ostrFilePath << strBasePath << "\\" << LOGFOLDERNAME << "\\FinalLog.txt";
+	ostrFilePath << strBasePath << "\\" << LOGFOLDERNAME << "\\" << strLogName <<".txt";
 	try
 	{
 		_logFile.open(ostrFilePath.str(), fstream::out | fstream::app);
@@ -51,7 +53,9 @@ CRecoLogMgr::~CRecoLogMgr()
 	//Input: none
 	//Output: none
 	if(_logFile.is_open())
+	{
 		_logFile.close();
+	}
 	//Close log file
 }
 

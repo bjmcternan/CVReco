@@ -15,12 +15,14 @@ CRecoManager::CRecoManager(void) :
 
 CRecoManager::~CRecoManager(void)
 {
+	//Free memory
 	if (_bowide != NULL)
 	{
 		delete (_bowide) ;
 		_bowide = NULL ;
 	}
 
+	//Free memory
 	for (map<string,CvSVM*>::iterator it = _classes_classifiers.begin(); it != _classes_classifiers.end(); ++it) 
 	{
 		if((*it).second != NULL)
@@ -30,15 +32,17 @@ CRecoManager::~CRecoManager(void)
 	}
 }
 
-bool CRecoManager::Init(string strBasePath, string strLogName, string numFeatures, string dictionarySize)
+bool CRecoManager::Init(string strBasePath, string strLogName, string numFeatures, string dictionarySize, string validationOrTest)
 {
 	if(!CRecoLogMgr::Instance()->Init(strBasePath, strLogName))
+	{
 		return false;
+	}
 	//Commented for final log
-	//CRecoLogMgr::Instance()->WriteLog("RecoManager -> Log Created\n");
+	CRecoLogMgr::Instance()->WriteLog("RecoManager -> Log Created\n");
 
 	ostringstream message;
-	message << "RecoManager -> Params used: number of features - " << numFeatures << " Dictionary Size - " << dictionarySize;
+	message << "RecoManager -> Params used: number of features - " << numFeatures << " Dictionary Size - " << dictionarySize << "Validation or Test - " << validationOrTest;
 	CRecoLogMgr::Instance()->WriteLog(message.str());
 
 	ostringstream strFullPath;
@@ -55,7 +59,7 @@ bool CRecoManager::Init(string strBasePath, string strLogName, string numFeature
 			strFullPath << strBasePath << "\\" << IMAGEFOLDERNAME << "\\" << RECO_PROCESS_NAME[i] << "\\" << RECO_CLASSIFICATION_NAME[j] << "\\";
 			
 			//Commented for final log
-			//CRecoLogMgr::Instance()->WriteLog("RecoManager -> New RecoFileMgr. Folder is: " + strFullPath.str());
+			CRecoLogMgr::Instance()->WriteLog("RecoManager -> New RecoFileMgr. Folder is: " + strFullPath.str());
 
 
 			if(!_RecoFileMgr[i][j].Init(strFullPath.str()))
@@ -67,11 +71,11 @@ bool CRecoManager::Init(string strBasePath, string strLogName, string numFeature
 	}
 	return true;
 }
-void CRecoManager::PopulateImages()
+void CRecoManager::PopulateImages(unsigned int validationOrTest)
 {
 	//Log
 	//Commented for final log
-	//CRecoLogMgr::Instance()->WriteLog("RecoManager -> Populating images : Start ");
+	CRecoLogMgr::Instance()->WriteLog("RecoManager -> Populating images : Start ");
 
 	for(unsigned int i = 0; i < NUM_RECO_CLASSIFICATIONS; i++)
 	{
@@ -85,24 +89,42 @@ void CRecoManager::PopulateImages()
 		}
 
 		//Test Images
-		for(unsigned int j = 0; j < _RecoFileMgr[RECO_TEST][i].GetNumImages(); j++)
+		//validationOrTest - 0 = validation, 1 = test
+		if(validationOrTest == 0)
 		{
-			CRecoImage tempImage;
-			tempImage.SetFullImagePath(_RecoFileMgr[RECO_TEST][i].GetImagePath(j));
-			tempImage.SetClassification((tRecoClassification)i);
-			_TestImages.push_back(tempImage);
+			//Validation Images
+			for(unsigned int j = 0; j < _RecoFileMgr[RECO_VALIDATION][i].GetNumImages(); j++)
+			{
+				CRecoImage tempImage;
+				tempImage.SetFullImagePath(_RecoFileMgr[RECO_VALIDATION][i].GetImagePath(j));
+				tempImage.SetClassification((tRecoClassification)i);
+				_TestImages.push_back(tempImage);
+			}
+		}
+		else
+		{
+			//Test Images
+			for(unsigned int j = 0; j < _RecoFileMgr[RECO_TEST][i].GetNumImages(); j++)
+			{
+				CRecoImage tempImage;
+				tempImage.SetFullImagePath(_RecoFileMgr[RECO_TEST][i].GetImagePath(j));
+				tempImage.SetClassification((tRecoClassification)i);
+				_TestImages.push_back(tempImage);
+			}
 		}
 	}
 
 	//Log
 	//Commented for final log
-	//CRecoLogMgr::Instance()->WriteLog("RecoManager -> Populating images : Stop ");
+	CRecoLogMgr::Instance()->WriteLog("RecoManager -> Populating images : Stop ");
 }
 
 CRecoImage* CRecoManager::GetImage(unsigned int i)
 {
 	if((int)i >= this->GetNumImages())
+	{
 		return NULL;
+	}
 	return &(_Images[i]);
 }
 
@@ -110,7 +132,7 @@ bool CRecoManager::BuildModel(unsigned int numFeatures, unsigned int dictionaryS
 {
 	//Log
 	//Commented for final log
-	//CRecoLogMgr::Instance()->WriteLog("RecoManager -> Building Model : Start ");
+	CRecoLogMgr::Instance()->WriteLog("RecoManager -> Building Model : Start ");
 
 	//Convert to arg input
 	int maxTimes = 10;
@@ -135,14 +157,14 @@ bool CRecoManager::BuildModel(unsigned int numFeatures, unsigned int dictionaryS
 		ostringstream message;
 		//Commented for final log
 		message << "RecoManager -> Descriptors for " << _Images[i].GetFullImagePath() << " written. Number: " << i+1;
-		//CRecoLogMgr::Instance()->WriteLog(message.str());
+		CRecoLogMgr::Instance()->WriteLog(message.str());
 	}
 	cout << "Finding Features: 100%" << endl;
 	vocabulary = bowTrainer.cluster();
 	
 	//Log
 	//Commented for final log
-	//CRecoLogMgr::Instance()->WriteLog("RecoManager -> Building Model : Stop ");
+	CRecoLogMgr::Instance()->WriteLog("RecoManager -> Building Model : Stop ");
 
 	TrainSVM(vocabulary);
 	return true;
@@ -174,18 +196,15 @@ void CRecoManager::TrainSVM(Mat vocabulary)
 
 	//Log
 	//Commented for final log
-	//CRecoLogMgr::Instance()->WriteLog("RecoManager -> Building SVM Classifiers : Start ");
+	CRecoLogMgr::Instance()->WriteLog("RecoManager -> Building SVM Classifiers : Start ");
 
-	//Code taken from https://github.com/royshil/FoodcamClassifier/blob/master/main.cpp Lines 117 - 141
+	//Code taken from https://github.com/royshil/FoodcamClassifier/blob/master/main.cpp
 	//Slightly modified
 	CvSVM mySVM;
-	/*Mat a;
-	Mat b;
-	mySVM.train(a,b);*/
 
 	CvSVMParams params;
 	params.svm_type    = CvSVM::C_SVC;
-	params.kernel_type = CvSVM::LINEAR;
+	params.kernel_type = CvSVM::RBF;
 	params.term_crit   = cvTermCriteria(CV_TERMCRIT_ITER, 100, 1e-6);
 
 	for (map<string,Mat>::iterator it = classes_training_data.begin(); it != classes_training_data.end(); ++it) 
@@ -215,27 +234,21 @@ void CRecoManager::TrainSVM(Mat vocabulary)
 		samples.convertTo(samples_32f, CV_32F);
 		if(_classes_classifiers.count(class_) == 0) 
 			_classes_classifiers[class_] = new CvSVM(samples_32f, labels);
-
-		CvSVM* p = _classes_classifiers[class_];
-		p->train(samples_32f,labels);
 		
 
-		/*
-		CvSVM svm;
-		try
-		{
-		svm.train(samples_32f,labels);
-		}
-		catch ( cv::Exception & e )
-		{
-		 cout << e.what() << endl;
-		}*/
+		//train_auto uses cross fold validation
+		CvSVM* p = _classes_classifiers[class_];
+		p->train_auto(samples_32f,labels,Mat(),Mat(),params,10);
+		//For tain_auto
+		ostringstream message;
+		message << "Optimal Params: degrees = " << params.degree << " Gamma = " << params.gamma << "Coef0 = " << params.coef0 << " C = " << params.C << " nu = " << params.nu << " P = " << params.p;
+		CRecoLogMgr::Instance()->WriteLog(message.str());
 	}
 	cout << "Training Classifiers: End" << endl;
 
 	//Log
 	//Commented for final log
-	//CRecoLogMgr::Instance()->WriteLog("RecoManager -> Building SVM Classifiers : Stop ");
+	CRecoLogMgr::Instance()->WriteLog("RecoManager -> Building SVM Classifiers : Stop ");
 }
 
 bool CRecoManager::TestModel(unsigned int numFeatures)
@@ -244,7 +257,7 @@ bool CRecoManager::TestModel(unsigned int numFeatures)
 
 	//Log
 	//Commented for final log
-	//CRecoLogMgr::Instance()->WriteLog("RecoManager -> Testing Model : Start ");
+	CRecoLogMgr::Instance()->WriteLog("RecoManager -> Testing Model : Start ");
 
 	SIFT SIFTDetector(numFeatures);
 	Mat response_hist;
@@ -285,7 +298,7 @@ bool CRecoManager::TestModel(unsigned int numFeatures)
 		message << "Guess: " << RECO_CLASSIFICATION_NAME[guess];
 		//Log
 		//Commented for final log
-		//CRecoLogMgr::Instance()->WriteLog(message.str());
+		CRecoLogMgr::Instance()->WriteLog(message.str());
 
 		if(guess == (int)(_TestImages[i].GetClassification()))
 		{
@@ -297,6 +310,7 @@ bool CRecoManager::TestModel(unsigned int numFeatures)
 	cout << "DONE: Percent right : " << percentage << endl;
 
 	ostringstream message;
+
 	message << "~DONE~ Percent right: " << percentage << "%"<< endl;
 	CRecoLogMgr::Instance()->WriteLog(message.str());
 	return true;
